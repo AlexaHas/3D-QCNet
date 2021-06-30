@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(description='3DQCNet Implementaiton')
 
 parser.add_argument("--mode",help ="To run Test model select 'test'; To run in Prediction mode select 'pred'",required=True)
 parser.add_argument("--thresh",help ="Value for probabaility threshold",default=0.5,type=int)
-parser.add_argument("--model_path",help ="The path for the model which will be loaded in 3D-QCNet",default='./models/3dqcnet_base-model_ep9.hdf5)
+parser.add_argument("--model_path",help ="The path for the model which will be loaded in 3D-QCNet",default='./models/3dqcnet_base-model_ep9.hdf5')
 
 args = parser.parse_args()
 
@@ -72,14 +72,14 @@ else:
 
 print(gt_cls[-5:])
 print(gt_cls_name[-5:])        
-# print(pred_file_names)
+print(pred_file_names)
 
 ### Load Model
 
 dense_model = densenet.DenseNet3D(input_shape=(96,96,70,1),include_top=False, pooling = 'avg', depth =10)
 preds = Dense(2,activation='softmax')(dense_model.output)
 model = Model(dense_model.input,preds)
-model.compile(optimizer=Adam(lr=1e-4),loss='binary_crossentropy',metrics=['acc'])
+model.compile(optimizer=Adam(learning_rate=1e-4),loss='binary_crossentropy',metrics=['acc'])
 
 
 model.load_weights(model_path)
@@ -91,13 +91,13 @@ X_preds = []
 
 for x in pred_file_names:               #### To test on subset of data, change this to pred_file_names[:10] for eg.
     
-    img = nib.load(x).get_data()
+    img = nib.load(x).get_fdata()
     
     new_img = np.zeros((96,96,70))
     depth = np.minimum(img.shape[-1],new_img.shape[-1])
     for i in range(depth):
         t = img[:,:,i]
-        tt = cv2.resize(t,(96,96))
+        tt = cv2.resize(t,(96,96)) 
         new_img[:,:,i] = tt
 
     img = np.array(new_img)
@@ -154,7 +154,7 @@ if mode == 'test':
     print("Precision - ", pr)
 
 #dest_folder = DESTN_FP
-#
+
 #if not os.path.exists(dest_folder+'bad/'):
 #    os.makedirs(dest_folder+'bad/')
 #if not os.path.exists(dest_folder+'good'):
